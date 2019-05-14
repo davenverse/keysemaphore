@@ -8,7 +8,7 @@ import cats.effect.concurrent._
 
 object KeySemaphore {
 
-  def apply[F[_]: Concurrent, K](f: K => Long): F[Semaphore[Kleisli[F, K, ?]]] = 
+  def of[F[_]: Concurrent, K](f: K => Long): F[Semaphore[Kleisli[F, K, ?]]] = 
     in[F, F, K](f)
 
   def in[G[_]: Sync, F[_]: Concurrent, K](f: K => Long): G[Semaphore[Kleisli[F, K, ?]]] = for {
