@@ -8,21 +8,32 @@ import cats.effect.concurrent._
 
 object KeySemaphore {
 
-  def of[F[_]: Concurrent, K](f: K => Long): F[Semaphore[Kleisli[F, K, ?]]] = for {
-    map <- Ref[F].of(Map.empty[K, Semaphore[F]])
-  } yield new SimpleKeySemaphore[F, K](map, f)
+  def apply[F[_]: Concurrent, K](f: K => Long): F[Semaphore[Kleisli[F, K, ?]]] = 
+    in[F, F, K](f)
+
+  def in[G[_]: Sync, F[_]: Concurrent, K](f: K => Long): G[Semaphore[Kleisli[F, K, ?]]] = for {
+    map <- Ref.in[G, F, Map[K, Semaphore[F]]](Map.empty[K, Semaphore[F]])
+  } yield new SimpleKeySemaphore[F, K](map, {k: K => Semaphore[F](f(k))})
+
+  def uncancelable[F[_]: Async, K](f: K => Long): F[Semaphore[Kleisli[F, K, ?]]] =
+    uncancelableIn[F, F, K](f)
+
+  def uncancelableIn[G[_]: Sync, F[_]: Async, K](f: K => Long): G[Semaphore[Kleisli[F, K, ?]]] = for {
+    map <- Ref.in[G, F, Map[K, Semaphore[F]]](Map.empty[K, Semaphore[F]])
+  } yield new SimpleKeySemaphore[F, K](map, {k: K => Semaphore.uncancelable(f(k))})
+
 
   private class SimpleKeySemaphore[F[_], K](
     private val semRef: Ref[F, Map[K, Semaphore[F]]],
-    private val f: K => Long
-  )(implicit F: Concurrent[F]) extends Semaphore[Kleisli[F, K, ?]]{
+    private val makeSem: K => F[Semaphore[F]]
+  )(implicit F: Sync[F]) extends Semaphore[Kleisli[F, K, ?]]{
 
     private def getOrMake(k: K): F[Semaphore[F]] = for {
       semMap <- semRef.get
       sem <- semMap.get(k)
         .fold(
           for {
-            newSem <- Semaphore[F](f(k))
+            newSem <- makeSem(k)
             out <- semRef.modify(m => m.get(k).fold(((m + (k -> newSem)), newSem))(sem => (m, sem)))
           } yield out
           
