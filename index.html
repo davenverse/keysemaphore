@@ -10,6 +10,62 @@
 <span class="o">)</span>
 </code></pre>
 </div>
+
+<h2 id="example">Example</h2>
+
+<p>Quick Imports</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">cats.effect._</span>
+<span class="k">import</span> <span class="nn">io.chrisdavenport.keysemaphore.KeySemaphore</span>
+<span class="k">implicit</span> <span class="k">val</span> <span class="nc">CS</span> <span class="k">=</span> <span class="nc">IO</span><span class="o">.</span><span class="n">contextShift</span><span class="o">(</span><span class="n">scala</span><span class="o">.</span><span class="n">concurrent</span><span class="o">.</span><span class="nc">ExecutionContext</span><span class="o">.</span><span class="n">global</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Then we build some operations</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="c1">// Second Action Can't Get Permit
+</span>     <span class="o">|</span> <span class="k">val</span> <span class="n">action1</span> <span class="k">=</span> <span class="o">{</span>
+     <span class="o">|</span>   <span class="k">for</span> <span class="o">{</span>
+     <span class="o">|</span>     <span class="n">sem</span> <span class="k">&lt;-</span> <span class="nc">KeySemaphore</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">Unit</span><span class="o">]{</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="mi">1L</span><span class="o">}</span>
+     <span class="o">|</span>     <span class="n">first</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(())</span>
+     <span class="o">|</span>     <span class="n">second</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(())</span>
+     <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">)</span>
+     <span class="o">|</span> <span class="o">}</span>
+<span class="n">action1</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$715941990</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">action1</span><span class="o">.</span><span class="n">unsafeRunSync</span>
+<span class="n">res1</span><span class="k">:</span> <span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span><span class="kc">false</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="c1">// Not Affected By Other Keys
+</span>     <span class="o">|</span> <span class="k">val</span> <span class="n">action2</span> <span class="k">=</span> <span class="o">{</span>
+     <span class="o">|</span>   <span class="k">for</span> <span class="o">{</span>
+     <span class="o">|</span>     <span class="n">sem</span> <span class="k">&lt;-</span> <span class="nc">KeySemaphore</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">Int</span><span class="o">]{</span><span class="k">_:</span> <span class="kt">Int</span> <span class="o">=&gt;</span> <span class="mi">1L</span><span class="o">}</span>
+     <span class="o">|</span>     <span class="n">first</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>     <span class="n">second</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+     <span class="o">|</span>     <span class="n">third</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">,</span> <span class="n">third</span><span class="o">)</span>
+     <span class="o">|</span> <span class="o">}</span>
+<span class="n">action2</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1499868320</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="n">action2</span><span class="o">.</span><span class="n">unsafeRunSync</span>
+<span class="n">res3</span><span class="k">:</span> <span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">,</span> <span class="nc">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span><span class="kc">true</span><span class="o">,</span><span class="kc">false</span><span class="o">)</span>
+
+<span class="n">scala</span><span class="o">&gt;</span> <span class="c1">// Releases Based on Keys
+</span>     <span class="o">|</span> <span class="c1">// This is space safe, so when the semaphore returns to the
+</span>     <span class="o">|</span> <span class="c1">// default it removes it from the internal so memory is not
+</span>     <span class="o">|</span> <span class="c1">// leaked per key
+</span>     <span class="o">|</span> <span class="k">val</span> <span class="n">action3</span> <span class="k">=</span> <span class="o">{</span>
+     <span class="o">|</span>   <span class="k">for</span> <span class="o">{</span>
+     <span class="o">|</span>     <span class="n">sem</span> <span class="k">&lt;-</span> <span class="nc">KeySemaphore</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">IO</span>, <span class="kt">Int</span><span class="o">]{</span><span class="k">_:</span> <span class="kt">Int</span> <span class="o">=&gt;</span> <span class="mi">1L</span><span class="o">}</span>
+     <span class="o">|</span>     <span class="n">first</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>     <span class="n">second</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>     <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">release</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>     <span class="n">third</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+     <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">,</span> <span class="n">third</span><span class="o">)</span>
+     <span class="o">|</span> <span class="o">}</span>
+<span class="n">action3</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1565411694</span>
+</code></pre>
+</div>
 </div></div></section><section class="technologies"><div class="container"><div class="row"></div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>keysemaphore is designed and developed by <a href="" target="_blank">Christopher Davenport</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/ChristopherDavenport/keysemaphore"><span class="fa fa-github"></span>View on GitHub</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/keysemaphore/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
