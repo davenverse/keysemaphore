@@ -27,7 +27,6 @@ object SimpleKeySemaphore {
     private val semRef: Ref[F, Map[K, Semaphore[F]]],
     private val makeSem: K => F[Semaphore[F]]
   )(implicit F: Sync[F]) extends Semaphore[Kleisli[F, K, ?]]{
-
     private def getOrMake(k: K): F[Semaphore[F]] = for {
       semMap <- semRef.get
       sem <- semMap.get(k)

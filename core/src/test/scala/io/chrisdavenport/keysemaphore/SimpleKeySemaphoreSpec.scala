@@ -5,7 +5,7 @@ import cats.effect._
 import scala.concurrent.ExecutionContext.global
 
 class SimpleKeySemaphoreSpec extends Specification {
-  "KeySemaphore" should {
+  "SimpleKeySemaphore" should {
     "only take the maximum values per key" in {
       implicit val CS = IO.contextShift(global)
       val test = for {

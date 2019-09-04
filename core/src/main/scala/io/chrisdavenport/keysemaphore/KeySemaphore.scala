@@ -12,7 +12,7 @@ object KeySemaphore {
   /**
    * Creates a new `Semaphore`, initialized with `n` available permits.
    */
-  def apply[F[_], K](keyFunction: K => Long)(implicit F: Concurrent[F]): F[Semaphore[Kleisli[F, K, *]]] = {
+  def of[F[_], K](keyFunction: K => Long)(implicit F: Concurrent[F]): F[Semaphore[Kleisli[F, K, *]]] = {
       Ref.of[F, Map[K, State[F]]](Map.empty[K, State[F]]).map(stateRef => new ConcurrentKeySemaphore(stateRef, keyFunction))
   }
 
@@ -43,7 +43,7 @@ object KeySemaphore {
    * acquire effects being uncancelable
    * and initializes state using another effect constructor
    */
-  def uncancelableIn[F[_], G[_], K](keyFunction: K => Long)(implicit F: Sync[F], G: Async[G]): F[Semaphore[Kleisli[G, K, *]]] =
+  def uncancelableIn[F[_], G[_], K](keyFunction: K => Long)(implicit F: Sync[F], G: Async[G]): F[Semaphore[Kleisli[G, K, *]]] =//Kleisli[G, K, *]]] =
       Ref.in[F, G, Map[K, State[G]]](Map()).map(stateRef => new AsyncKeySemaphore(stateRef, keyFunction))
 
   private def assertNonNegative[F[_]](n: Long)(implicit F: ApplicativeError[F, Throwable]): F[Unit] =
@@ -57,7 +57,6 @@ object KeySemaphore {
     protected def mkGate: F[Deferred[F, Unit]]
 
     private def open(gate: Deferred[F, Unit]): F[Unit] = gate.complete(())
-
 
     def acquireNInternal(n: Long): Kleisli[F, K, (F[Unit], F[Unit])]= Kleisli{ k => 
       assertNonNegative[F](n) *> {
@@ -151,7 +150,7 @@ object KeySemaphore {
                   else Some(Right(m + n))
                 case None => None
               }
-              val out = u.map(state => old + (k -> state)).getOrElse(old)
+              val out = u.map(state => old + (k -> state)).getOrElse(old - k)
               (out, (old.get(k), u))
             }
             .flatMap { case (previous, now) =>
