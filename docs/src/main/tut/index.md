@@ -65,4 +65,6 @@ val action3 = {
     third <- sem.tryAcquire.run(1)
   } yield (first, second, third)
 }
+
+action3.unsafeRunSync
 ```
