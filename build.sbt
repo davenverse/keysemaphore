@@ -1,6 +1,7 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 lazy val `keysemaphore` = project.in(file("."))
+  .disablePlugins(MimaPlugin)
   .settings(commonSettings, releaseSettings, skipOnPublishSettings)
   .aggregate(core, docs)
 
@@ -13,6 +14,7 @@ lazy val core = project.in(file("core"))
 lazy val docs = project.in(file("docs"))
   .settings(commonSettings, skipOnPublishSettings, micrositeSettings)
   .dependsOn(core)
+  .disablePlugins(MimaPlugin)
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(TutPlugin)
 
@@ -21,7 +23,7 @@ lazy val contributors = Seq(
 )
 
 val catsV = "1.6.1"
-val catsEffectV = "1.3.1"
+val catsEffectV = "1.4.0"
 val specs2V = "4.7.0"
 
 val kindProjectorV = "0.10.3"
@@ -31,9 +33,8 @@ val betterMonadicForV = "0.3.1"
 lazy val commonSettings = Seq(
   organization := "io.chrisdavenport",
 
-  scalaVersion := "2.12.8",
+  scalaVersion := "2.12.9",
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
-  scalacOptions += "-Yrangepos",
 
   scalacOptions in (Compile, doc) ++= Seq(
       "-groups",
@@ -157,6 +158,7 @@ lazy val mimaSettings = {
   lazy val extraVersions: Set[String] = Set()
 
   Seq(
+    mimaFailOnNoPrevious := false,
     mimaFailOnProblem := mimaVersions(version.value).toList.headOption.isDefined,
     mimaPreviousArtifacts := (mimaVersions(version.value) ++ extraVersions)
       .filterNot(excludedVersions.contains(_))
