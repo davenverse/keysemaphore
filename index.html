@@ -31,7 +31,7 @@
      <span class="o">|</span>     <span class="n">second</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(())</span>
      <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">)</span>
      <span class="o">|</span> <span class="o">}</span>
-<span class="n">action1</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$17299286</span>
+<span class="n">action1</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1606729931</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="n">action1</span><span class="o">.</span><span class="n">unsafeRunSync</span>
 <span class="n">res1</span><span class="k">:</span> <span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span><span class="kc">false</span><span class="o">)</span>
@@ -45,7 +45,7 @@
      <span class="o">|</span>     <span class="n">third</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
      <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">,</span> <span class="n">third</span><span class="o">)</span>
      <span class="o">|</span> <span class="o">}</span>
-<span class="n">action2</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$2104569440</span>
+<span class="n">action2</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1922714910</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="n">action2</span><span class="o">.</span><span class="n">unsafeRunSync</span>
 <span class="n">res3</span><span class="k">:</span> <span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">,</span> <span class="nc">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span><span class="kc">true</span><span class="o">,</span><span class="kc">false</span><span class="o">)</span>
@@ -63,7 +63,7 @@
      <span class="o">|</span>     <span class="n">third</span> <span class="k">&lt;-</span> <span class="n">sem</span><span class="o">.</span><span class="n">tryAcquire</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
      <span class="o">|</span>   <span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">first</span><span class="o">,</span> <span class="n">second</span><span class="o">,</span> <span class="n">third</span><span class="o">)</span>
      <span class="o">|</span> <span class="o">}</span>
-<span class="n">action3</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1478181346</span>
+<span class="n">action3</span><span class="k">:</span> <span class="kt">cats.effect.IO</span><span class="o">[(</span><span class="kt">Boolean</span>, <span class="kt">Boolean</span>, <span class="kt">Boolean</span><span class="o">)]</span> <span class="k">=</span> <span class="nc">IO$1188891065</span>
 
 <span class="n">scala</span><span class="o">&gt;</span> <span class="n">action3</span><span class="o">.</span><span class="n">unsafeRunSync</span>
 <span class="n">res8</span><span class="k">:</span> <span class="o">(</span><span class="kt">Boolean</span><span class="o">,</span> <span class="kt">Boolean</span><span class="o">,</span> <span class="nc">Boolean</span><span class="o">)</span> <span class="k">=</span> <span class="o">(</span><span class="kc">true</span><span class="o">,</span><span class="kc">false</span><span class="o">,</span><span class="kc">true</span><span class="o">)</span>
