@@ -10,8 +10,8 @@ class KeySemaphoreSpec extends Specification {
       implicit val CS = IO.contextShift(global)
       val test = for {
         sem <- KeySemaphore.of[IO, Unit]{_: Unit => 1L}
-        first <- sem.tryAcquire.run(())
-        second <- sem.tryAcquire.run(())
+        first <- sem(()).tryAcquire
+        second <- sem(()).tryAcquire
       } yield (first, second)
       test.unsafeRunSync() must_=== ((true, false))
     }
@@ -20,9 +20,9 @@ class KeySemaphoreSpec extends Specification {
       implicit val CS = IO.contextShift(global)
       val test = for {
         sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
-        first <- sem.tryAcquire.run(1)
-        second <- sem.tryAcquire.run(2)
-        third <- sem.tryAcquire.run(1)
+        first <- sem(1).tryAcquire
+        second <- sem(2).tryAcquire
+        third <- sem(1).tryAcquire
       } yield (first, second, third)
       test.unsafeRunSync() must_=== ((true, true, false))
     }
@@ -31,10 +31,10 @@ class KeySemaphoreSpec extends Specification {
       implicit val CS = IO.contextShift(global)
       val test = for {
         sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
-        first <- sem.tryAcquire.run(1)
-        second <- sem.tryAcquire.run(1)
-        _ <- sem.release.run(1)
-        third <- sem.tryAcquire.run(1)
+        first <- sem(1).tryAcquire
+        second <- sem(1).tryAcquire
+        _ <- sem(1).release
+        third <- sem(1).tryAcquire
       } yield (first, second, third)
       test.unsafeRunSync() must_=== ((true,false, true))
     }
@@ -43,10 +43,10 @@ class KeySemaphoreSpec extends Specification {
       implicit val CS = IO.contextShift(global)
       val test = for {
         sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
-        first <- sem.tryAcquire.run(1)
-        _ <- sem.releaseN(10).run(1)
-        second <- sem.tryAcquire.run(1)
-        third <- sem.tryAcquire.run(1)
+        first <- sem(1).tryAcquire
+        _ <- sem(1).releaseN(10)
+        second <- sem(1).tryAcquire
+        third <- sem(1).tryAcquire
       } yield (first, second, third)
       test.unsafeRunSync() must_=== ((true, true, false))
     }
