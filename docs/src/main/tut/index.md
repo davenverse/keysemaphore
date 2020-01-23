@@ -33,8 +33,8 @@ Then we build some operations
 val action1 = {
   for {
     sem <- KeySemaphore.of[IO, Unit]{_ => 1L}
-    first <- sem.tryAcquire.run(())
-    second <- sem.tryAcquire.run(())
+    first <- sem(()).tryAcquire
+    second <- sem(()).tryAcquire
   } yield (first, second)
 }
 
@@ -44,9 +44,9 @@ action1.unsafeRunSync
 val action2 = {
   for {
     sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
-    first <- sem.tryAcquire.run(1)
-    second <- sem.tryAcquire.run(2)
-    third <- sem.tryAcquire.run(1)
+    first <- sem(1).tryAcquire
+    second <- sem(2).tryAcquire
+    third <- sem(1).tryAcquire
   } yield (first, second, third)
 }
 
@@ -59,10 +59,10 @@ action2.unsafeRunSync
 val action3 = {
   for {
     sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
-    first <- sem.tryAcquire.run(1)
-    second <- sem.tryAcquire.run(1)
-    _ <- sem.release.run(1)
-    third <- sem.tryAcquire.run(1)
+    first <- sem(1).tryAcquire
+    second <- sem(1).tryAcquire
+    _ <- sem(1).release
+    third <- sem(1).tryAcquire
   } yield (first, second, third)
 }
 
