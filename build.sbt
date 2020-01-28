@@ -6,6 +6,7 @@ lazy val `keysemaphore` = project.in(file("."))
   .aggregate(core, docs)
 
 lazy val core = project.in(file("core"))
+  .disablePlugins(MimaPlugin)
   .settings(commonSettings)
   .settings(
     name := "keysemaphore"
