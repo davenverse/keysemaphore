@@ -13,7 +13,7 @@ import scala.collection.immutable.Queue
  * values when permits reach those indicated by the keyfunction,
  * as to not leak space
  **/
-trait KeySemaphore[F[_], K]{
+trait KeySemaphore[F[_], K] extends Function1[K, Semaphore[F]]{
   def apply(k: K): Semaphore[F]
 }
 object KeySemaphore {
@@ -61,7 +61,7 @@ object KeySemaphore {
   // or it is non-empty, and there are n permits available (Right)
   private type State[F[_]] = Either[Queue[(Long, Deferred[F, Unit])], Long]
 
-  abstract class AbstractKeySemaphore[F[_], K](state: Ref[F, Map[K, State[F]]], keyFunction: K => Long)(implicit F: Async[F]) extends KeySemaphore[F, K] {
+  private abstract class AbstractKeySemaphore[F[_], K](state: Ref[F, Map[K, State[F]]], keyFunction: K => Long)(implicit F: Async[F]) extends KeySemaphore[F, K] {
     protected def mkGate: F[Deferred[F, Unit]]
 
     private def open(gate: Deferred[F, Unit]): F[Unit] = gate.complete(())
