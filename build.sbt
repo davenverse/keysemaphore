@@ -62,7 +62,7 @@ lazy val docs = project.in(file("docs"))
 
 val catsV = "2.1.1"
 val catsEffectV = "2.1.2"
-val specs2V = "4.8.3"
+val specs2V = "4.9.2"
 
 val kindProjectorV = "0.11.0"
 val betterMonadicForV = "0.3.1"
