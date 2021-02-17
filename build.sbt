@@ -60,7 +60,7 @@ lazy val docs = project.in(file("docs"))
     )
   }
 
-val catsV = "2.1.1"
+val catsV = "2.4.2"
 val catsEffectV = "2.1.4"
 val specs2V = "4.8.3"
 
