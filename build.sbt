@@ -2,7 +2,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 lazy val `keysemaphore` = project.in(file("."))
   .disablePlugins(MimaPlugin)
-  .settings(skip in publish := true)
+  .settings(publish / skip := true)
   .aggregate(core, docs)
 
 lazy val core = project.in(file("core"))
@@ -18,7 +18,7 @@ lazy val docs = project.in(file("docs"))
   .disablePlugins(MimaPlugin)
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(TutPlugin)
-  .settings(skip in publish := true)
+  .settings(publish / skip := true)
   .settings{
     import microsites._
     Seq(
@@ -41,8 +41,8 @@ lazy val docs = project.in(file("docs"))
         "gray-lighter" -> "#F4F3F4",
         "white-color" -> "#FFFFFF"
       ),
-      fork in tut := true,
-      scalacOptions in Tut --= Seq(
+      tut / fork := true,
+      scalacOptions --= Seq(
         "-Xfatal-warnings",
         "-Ywarn-unused-import",
         "-Ywarn-numeric-widen",
@@ -60,27 +60,28 @@ lazy val docs = project.in(file("docs"))
     )
   }
 
-val catsV = "2.1.1"
-val catsEffectV = "2.1.4"
-val specs2V = "4.8.3"
-
-val kindProjectorV = "0.11.3"
-val betterMonadicForV = "0.3.1"
+val catsV = "2.6.1"
+val catsEffectV = "3.1.1"
+val specs2V = "4.12.3"
+val kindProjectorV = "0.13.0"
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.1",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.10"),
+  scalaVersion := "2.13.6",
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
 
   addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjectorV cross CrossVersion.full),
-  addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= Seq(
     "org.typelevel"               %% "cats-core"                  % catsV,
     "org.typelevel"               %% "cats-effect"                % catsEffectV,
-
     "org.specs2"                  %% "specs2-core"                % specs2V       % Test,
     "org.specs2"                  %% "specs2-scalacheck"          % specs2V       % Test
-  )
+  ) ++
+  // format: off
+  (if (scalaVersion.value.startsWith("2"))
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV).cross(CrossVersion.full))
+  else Nil)
+  // format: on
 )
 
 // General Settings
@@ -94,9 +95,9 @@ inThisBuild(List(
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
 
   pomIncludeRepository := { _ => false},
-  scalacOptions in (Compile, doc) ++= Seq(
+  Compile / doc / scalacOptions ++= Seq(
       "-groups",
-      "-sourcepath", (baseDirectory in LocalRootProject).value.getAbsolutePath,
+      "-sourcepath", (LocalRootProject / baseDirectory).value.getAbsolutePath,
       "-doc-source-url", "https://github.com/ChristopherDavenport/keysemaphore/blob/v" + version.value + "€{FILE_PATH}.scala"
   ),
 ))
