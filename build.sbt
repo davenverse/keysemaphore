@@ -68,7 +68,7 @@ val kindProjectorV = "0.13.0"
 // General Settings
 lazy val commonSettings = Seq(
   scalaVersion := "2.13.6",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
+  crossScalaVersions := Seq(scalaVersion.value, "3.0.0", "2.12.14"),
 
   addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjectorV cross CrossVersion.full),
   libraryDependencies ++= Seq(
