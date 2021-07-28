@@ -17,7 +17,6 @@ lazy val docs = project.in(file("docs"))
   .dependsOn(core)
   .disablePlugins(MimaPlugin)
   .enablePlugins(MicrositesPlugin)
-  .enablePlugins(TutPlugin)
   .settings(publish / skip := true)
   .settings{
     import microsites._
@@ -41,7 +40,6 @@ lazy val docs = project.in(file("docs"))
         "gray-lighter" -> "#F4F3F4",
         "white-color" -> "#FFFFFF"
       ),
-      tut / fork := true,
       scalacOptions --= Seq(
         "-Xfatal-warnings",
         "-Ywarn-unused-import",
@@ -61,22 +59,19 @@ lazy val docs = project.in(file("docs"))
   }
 
 val catsV = "2.6.1"
-val catsEffectV = "3.1.1"
-val specs2V = "4.12.3"
+val catsEffectV = "3.2.0"
+val munitCatsEffectV = "1.0.5"
 val kindProjectorV = "0.13.0"
 
 // General Settings
 lazy val commonSettings = Seq(
   scalaVersion := "2.13.6",
   crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
-
-  addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjectorV cross CrossVersion.full),
   libraryDependencies ++= Seq(
     "org.typelevel"               %% "cats-core"                  % catsV,
     "org.typelevel"               %% "cats-effect"                % catsEffectV,
-    "org.specs2"                  %% "specs2-core"                % specs2V       % Test,
-    "org.specs2"                  %% "specs2-scalacheck"          % specs2V       % Test
-  ) ++
+		"org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test
+	) ++
   // format: off
   (if (scalaVersion.value.startsWith("2"))
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV).cross(CrossVersion.full))

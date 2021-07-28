@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
 
 Quick Imports
 
-```tut:silent
+```scala mdoc:silent
 import cats.effect._
 import io.chrisdavenport.keysemaphore.KeySemaphore
 implicit val CS = IO.contextShift(scala.concurrent.ExecutionContext.global)
@@ -28,7 +28,7 @@ implicit val CS = IO.contextShift(scala.concurrent.ExecutionContext.global)
 
 Then we build some operations
 
-```tut
+```scala mdoc
 // Second Action Can't Get Permit
 val action1 = {
   for {
