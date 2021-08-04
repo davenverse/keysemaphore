@@ -9,7 +9,7 @@ ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.1")
 lazy val `keysemaphore` = project.in(file("."))
   .disablePlugins(MimaPlugin)
   .enablePlugins(NoPublishPlugin)
-  .aggregate(core.jvm, core.js, docs)
+  .aggregate(core.jvm, core.js, site)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
