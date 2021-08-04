@@ -12,8 +12,8 @@ lazy val `keysemaphore` = project.in(file("."))
   .aggregate(core.jvm, core.js, docs)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure).in(file("core"))
-  .disablePlugins(MimaPlugin)
+  .crossType(CrossType.Pure)
+  .in(file("core"))
   .settings(
     name := "keysemaphore",
     libraryDependencies ++= Seq(
