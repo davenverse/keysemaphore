@@ -16,13 +16,17 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .in(file("core"))
   .settings(
     name := "keysemaphore",
+    mimaVersionCheckExcludedVersions := {
+      if (isDotty.value) Set("0.2.0")
+      else Set()
+    },
     libraryDependencies ++= Seq(
       "org.typelevel"               %%% "cats-core"                  % catsV,
       "org.typelevel"               %%% "cats-effect"                % catsEffectV,
 
       ("org.specs2"                  %%% "specs2-core"                % specs2V       % Test).cross(CrossVersion.for3Use2_13),
       ("org.specs2"                  %%% "specs2-scalacheck"          % specs2V       % Test).cross(CrossVersion.for3Use2_13)
-    )
+    ),
   )
 
 lazy val site = project.in(file("site"))
