@@ -9,7 +9,7 @@ class KeySemaphoreSpec extends Specification {
     "only take the maximum values per key" in {
       implicit val CS = IO.contextShift(global)
       val test = for {
-        sem <- KeySemaphore.of[IO, Unit]{_: Unit => 1L}
+        sem <- KeySemaphore.of[IO, Unit]{(_: Unit) => 1L}
         first <- sem(()).tryAcquire
         second <- sem(()).tryAcquire
       } yield (first, second)
@@ -19,7 +19,7 @@ class KeySemaphoreSpec extends Specification {
     "not be affected by other keys" in {
       implicit val CS = IO.contextShift(global)
       val test = for {
-        sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
+        sem <- KeySemaphore.of[IO, Int]{(_: Int) => 1L}
         first <- sem(1).tryAcquire
         second <- sem(2).tryAcquire
         third <- sem(1).tryAcquire
@@ -30,7 +30,7 @@ class KeySemaphoreSpec extends Specification {
     "restore on finished" in {
       implicit val CS = IO.contextShift(global)
       val test = for {
-        sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
+        sem <- KeySemaphore.of[IO, Int]{(_: Int) => 1L}
         first <- sem(1).tryAcquire
         second <- sem(1).tryAcquire
         _ <- sem(1).release
@@ -42,7 +42,7 @@ class KeySemaphoreSpec extends Specification {
     "not allow more than the key" in {
       implicit val CS = IO.contextShift(global)
       val test = for {
-        sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
+        sem <- KeySemaphore.of[IO, Int]{(_: Int) => 1L}
         first <- sem(1).tryAcquire
         _ <- sem(1).releaseN(10)
         second <- sem(1).tryAcquire
