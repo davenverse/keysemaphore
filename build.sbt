@@ -25,7 +25,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
     )
   )
 
-lazy val docs = project.in(file("docs"))
+lazy val site = project.in(file("site"))
   .dependsOn(core.jvm)
   .disablePlugins(MimaPlugin)
   .enablePlugins(NoPublishPlugin)
