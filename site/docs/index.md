@@ -3,7 +3,7 @@ layout: home
 
 ---
 
-# keysemaphore - Keyed Semaphores [![Build Status](https://travis-ci.com/ChristopherDavenport/keysemaphore.svg?branch=master)](https://travis-ci.com/ChristopherDavenport/keysemaphore) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/keysemaphore_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/keysemaphore_2.12)
+# keysemaphore - Keyed Semaphores [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/keysemaphore_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.chrisdavenport/keysemaphore_2.12)
 
 ## Quick Start
 

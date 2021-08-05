@@ -48,7 +48,4 @@ class KeySemaphoreSpec extends CatsEffectSuite {
     val expected = (true, true, false)
     assertIO(obtained, expected)
   }
-
-  // def printState(sem: KeySemaphore.AbstractKeySemaphore[IO, _]): IO[Unit] =
-  //   sem.getState.flatMap(st => IO.delay(println(st)))
 }
