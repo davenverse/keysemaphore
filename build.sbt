@@ -1,24 +1,27 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
-lazy val `keysemaphore` = project.in(file("."))
+lazy val `keysemaphore` = project
+  .in(file("."))
   .disablePlugins(MimaPlugin)
   .settings(publish / skip := true)
   .aggregate(core, docs)
 
-lazy val core = project.in(file("core"))
+lazy val core = project
+  .in(file("core"))
   .disablePlugins(MimaPlugin)
   .settings(commonSettings)
   .settings(
     name := "keysemaphore"
   )
 
-lazy val docs = project.in(file("docs"))
+lazy val docs = project
+  .in(file("docs"))
   .settings(commonSettings)
   .dependsOn(core)
   .disablePlugins(MimaPlugin)
   .enablePlugins(MicrositesPlugin)
   .settings(publish / skip := true)
-  .settings{
+  .settings {
     import microsites._
     Seq(
       micrositeName := "keysemaphore",
@@ -51,27 +54,39 @@ lazy val docs = project.in(file("docs"))
       micrositePushSiteWith := GitHub4s,
       micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
       micrositeExtraMdFiles := Map(
-          file("CHANGELOG.md")        -> ExtraMdFileConfig("changelog.md", "page", Map("title" -> "changelog", "section" -> "changelog", "position" -> "100")),
-          file("CODE_OF_CONDUCT.md")  -> ExtraMdFileConfig("code-of-conduct.md",   "page", Map("title" -> "code of conduct",   "section" -> "code of conduct",   "position" -> "101")),
-          file("LICENSE")             -> ExtraMdFileConfig("license.md",   "page", Map("title" -> "license",   "section" -> "license",   "position" -> "102"))
+        file("CHANGELOG.md") -> ExtraMdFileConfig(
+          "changelog.md",
+          "page",
+          Map("title" -> "changelog", "section" -> "changelog", "position" -> "100")
+        ),
+        file("CODE_OF_CONDUCT.md") -> ExtraMdFileConfig(
+          "code-of-conduct.md",
+          "page",
+          Map("title" -> "code of conduct", "section" -> "code of conduct", "position" -> "101")
+        ),
+        file("LICENSE") -> ExtraMdFileConfig(
+          "license.md",
+          "page",
+          Map("title" -> "license", "section" -> "license", "position" -> "102")
+        )
       )
     )
   }
 
 val catsV = "2.6.1"
-val catsEffectV = "3.2.0"
+val catsEffectV = "3.2.1"
 val munitCatsEffectV = "1.0.5"
 val kindProjectorV = "0.13.0"
 
 // General Settings
 lazy val commonSettings = Seq(
-  scalaVersion := "2.13.6",
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.14"),
+  scalaVersion := "3.0.0",
+  crossScalaVersions := Seq(scalaVersion.value, "2.13.6", "2.12.14"),
   libraryDependencies ++= Seq(
-    "org.typelevel"               %% "cats-core"                  % catsV,
-    "org.typelevel"               %% "cats-effect"                % catsEffectV,
-		"org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test
-	) ++
+    "org.typelevel"  %% "cats-core"           % catsV,
+    "org.typelevel"  %% "cats-effect"         % catsEffectV,
+    "org.typelevel" %%% "munit-cats-effect-3" % munitCatsEffectV % Test
+  ) ++
   // format: off
   (if (scalaVersion.value.startsWith("2"))
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % kindProjectorV).cross(CrossVersion.full))
@@ -80,19 +95,26 @@ lazy val commonSettings = Seq(
 )
 
 // General Settings
-inThisBuild(List(
-  organization := "io.chrisdavenport",
-  developers := List(
-    Developer("ChristopherDavenport", "Christopher Davenport", "chris@christopherdavenport.tech", url("https://github.com/ChristopherDavenport"))
-  ),
-
-  homepage := Some(url("https://github.com/ChristopherDavenport/keysemaphore")),
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-
-  pomIncludeRepository := { _ => false},
-  Compile / doc / scalacOptions ++= Seq(
+inThisBuild(
+  List(
+    organization := "io.chrisdavenport",
+    developers := List(
+      Developer(
+        "ChristopherDavenport",
+        "Christopher Davenport",
+        "chris@christopherdavenport.tech",
+        url("https://github.com/ChristopherDavenport")
+      )
+    ),
+    homepage := Some(url("https://github.com/ChristopherDavenport/keysemaphore")),
+    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+    pomIncludeRepository := { _ => false },
+    Compile / doc / scalacOptions ++= Seq(
       "-groups",
-      "-sourcepath", (LocalRootProject / baseDirectory).value.getAbsolutePath,
-      "-doc-source-url", "https://github.com/ChristopherDavenport/keysemaphore/blob/v" + version.value + "€{FILE_PATH}.scala"
-  ),
-))
+      "-sourcepath",
+      (LocalRootProject / baseDirectory).value.getAbsolutePath,
+      "-doc-source-url",
+      "https://github.com/ChristopherDavenport/keysemaphore/blob/v" + version.value + "€{FILE_PATH}.scala"
+    )
+  )
+)
