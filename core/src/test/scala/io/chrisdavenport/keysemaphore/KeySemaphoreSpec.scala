@@ -6,7 +6,7 @@ import munit.CatsEffectSuite
 class KeySemaphoreSpec extends CatsEffectSuite {
   test("only take the maximum values per key") {
     val obtained = for {
-      sem <- KeySemaphore.of[IO, Unit] { _: Unit => 1L }
+      sem <- KeySemaphore.of[IO, Unit]((_: Unit) => 1L)
       first <- sem(()).tryAcquire
       second <- sem(()).tryAcquire
     } yield (first, second)
@@ -16,7 +16,7 @@ class KeySemaphoreSpec extends CatsEffectSuite {
 
   test("not be affected by other keys") {
     val obtained = for {
-      sem <- KeySemaphore.of[IO, Int] { _: Int => 1L }
+      sem <- KeySemaphore.of[IO, Int]((_: Int) => 1L)
       first <- sem(1).tryAcquire
       second <- sem(2).tryAcquire
       third <- sem(1).tryAcquire
@@ -27,7 +27,7 @@ class KeySemaphoreSpec extends CatsEffectSuite {
 
   test("restore on finished") {
     val obtained = for {
-      sem <- KeySemaphore.of[IO, Int] { _: Int => 1L }
+      sem <- KeySemaphore.of[IO, Int]((_: Int) => 1L)
       first <- sem(1).tryAcquire
       second <- sem(1).tryAcquire
       _ <- sem(1).release
@@ -39,7 +39,7 @@ class KeySemaphoreSpec extends CatsEffectSuite {
 
   test("not allow more than the key") {
     val obtained = for {
-      sem <- KeySemaphore.of[IO, Int] { _: Int => 1L }
+      sem <- KeySemaphore.of[IO, Int]((_: Int) => 1L)
       first <- sem(1).tryAcquire
       _ <- sem(1).releaseN(10)
       second <- sem(1).tryAcquire

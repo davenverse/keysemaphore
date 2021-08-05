@@ -8,27 +8,33 @@ import cats.syntax.all._
 import scala.collection.immutable.Queue
 
 /**
- * A KeySemaphore is a structure which has Semaphores
- * for each of the keys in the domain, it cleans up the additional
- * values when permits reach those indicated by the keyfunction,
- * as to not leak space
- **/
-trait KeySemaphore[F[_], K] extends Function1[K, Semaphore[F]]{
+ * A KeySemaphore is a structure which has Semaphores for each of the keys in the domain, it cleans
+ * up the additional values when permits reach those indicated by the keyfunction, as to not leak
+ * space
+ */
+trait KeySemaphore[F[_], K] extends Function1[K, Semaphore[F]] {
   def apply(k: K): Semaphore[F]
 }
 object KeySemaphore {
+
   /**
    * Creates a new `Semaphore`, initialized with `n` available permits.
    */
   def of[F[_], K](keyFunction: K => Long)(implicit F: Async[F]): F[KeySemaphore[F, K]] =
-    Ref.of[F, Map[K, State[F]]](Map.empty[K, State[F]]).map(stateRef => new ConcurrentKeySemaphore(stateRef, keyFunction))
+    Ref
+      .of[F, Map[K, State[F]]](Map.empty[K, State[F]])
+      .map(stateRef => new ConcurrentKeySemaphore(stateRef, keyFunction))
 
   /**
-   * Creates a new `Semaphore`, initialized with `n` available permits.
-   * like `apply` but initializes state using another effect constructor
+   * Creates a new `Semaphore`, initialized with `n` available permits. like `apply` but initializes
+   * state using another effect constructor
    */
-  def in[F[_], G[_], K](keyFunction: K => Long)(implicit F: Sync[F], G: Async[G]): F[KeySemaphore[G, K]] =
-      Ref.in[F, G, Map[K, State[G]]](Map()).map(stateRef => new ConcurrentKeySemaphore(stateRef, keyFunction))
+  def in[F[_], G[_], K](
+      keyFunction: K => Long
+  )(implicit F: Sync[F], G: Async[G]): F[KeySemaphore[G, K]] =
+    Ref
+      .in[F, G, Map[K, State[G]]](Map())
+      .map(stateRef => new ConcurrentKeySemaphore(stateRef, keyFunction))
 
   def requireNonNegative(n: Long): Unit =
     require(n >= 0, s"n must be nonnegative, was: $n")
@@ -37,7 +43,11 @@ object KeySemaphore {
   // or it is non-empty, and there are n permits available (Right)
   private type State[F[_]] = Either[Queue[(Long, Deferred[F, Unit])], Long]
 
-  private abstract class AbstractKeySemaphore[F[_], K](state: Ref[F, Map[K, State[F]]], keyFunction: K => Long)(implicit F: Async[F]) extends KeySemaphore[F, K] {
+  private abstract class AbstractKeySemaphore[F[_], K](
+      state: Ref[F, Map[K, State[F]]],
+      keyFunction: K => Long
+  )(implicit F: Async[F])
+      extends KeySemaphore[F, K] {
     protected def mkGate: F[Deferred[F, Unit]]
 
     private def open(gate: Deferred[F, Unit]): F[Unit] = gate.complete(()).void
@@ -45,45 +55,51 @@ object KeySemaphore {
     def apply(k: K): Semaphore[F] = new InternalSem(k)
 
     class InternalSem(k: K) extends Semaphore[F] {
-      def acquireNInternal(n: Long): F[(F[Unit], F[Unit])]= {
+      def acquireNInternal(n: Long): F[(F[Unit], F[Unit])] = {
         requireNonNegative(n)
         if (n == 0) F.pure((F.unit, F.unit))
-        else mkGate.flatMap { gate =>
-          state
-            .modify { oldMap =>
-              val u = oldMap.get(k) match {
-                case Some(Left(waiting)) => Left(waiting :+ (n -> gate))
-                case Some(Right(m))=>
-                  if (n <= m) Right(m - n)
-                  else Left(Queue((n - m) -> gate))
-                case None =>
-                  val m = keyFunction(k)
-                  if (n <= m) Right(m - n)
-                  else  Left(Queue((n - m) -> gate))
-              }
-              (oldMap + (k -> u), u)
-            }
-            .map{
-              case Left(waiting) =>
-                val cleanup: F[Unit] = state.modify { oldMap => oldMap.get(k) match {
-                  case Some(Left(waiting)) =>
-                    waiting.find(_._2 eq gate).map(_._1) match {
-                      case None => (oldMap + (k -> Left(waiting)), releaseN(n))
-                      case Some(m) => (oldMap + (k -> Left(waiting.filterNot(_._2 eq gate))), releaseN(n - m))
-                    }
+        else
+          mkGate.flatMap { gate =>
+            state
+              .modify { oldMap =>
+                val u = oldMap.get(k) match {
+                  case Some(Left(waiting)) => Left(waiting :+ (n -> gate))
                   case Some(Right(m)) =>
-                    if (m + n >= keyFunction(k)) (oldMap - k, F.unit)
-                    else (oldMap + (k -> Right(m + n)), F.unit)
-                  case None => (oldMap, F.unit)
-                }}.flatten
-                val entry = waiting.lastOption.getOrElse(sys.error("Semaphore has empty waiting queue rather than 0 count"))
-                entry._2.get -> cleanup
-              case Right(_) => F.unit -> releaseN(n)
-            }
-        }
+                    if (n <= m) Right(m - n)
+                    else Left(Queue((n - m) -> gate))
+                  case None =>
+                    val m = keyFunction(k)
+                    if (n <= m) Right(m - n)
+                    else Left(Queue((n - m) -> gate))
+                }
+                (oldMap + (k -> u), u)
+              }
+              .map {
+                case Left(waiting) =>
+                  val cleanup: F[Unit] = state.modify { oldMap =>
+                    oldMap.get(k) match {
+                      case Some(Left(waiting)) =>
+                        waiting.find(_._2 eq gate).map(_._1) match {
+                          case None => (oldMap + (k -> Left(waiting)), releaseN(n))
+                          case Some(m) =>
+                            (oldMap + (k -> Left(waiting.filterNot(_._2 eq gate))), releaseN(n - m))
+                        }
+                      case Some(Right(m)) =>
+                        if (m + n >= keyFunction(k)) (oldMap - k, F.unit)
+                        else (oldMap + (k -> Right(m + n)), F.unit)
+                      case None => (oldMap, F.unit)
+                    }
+                  }.flatten
+                  val entry = waiting.lastOption.getOrElse(
+                    sys.error("Semaphore has empty waiting queue rather than 0 count")
+                  )
+                  entry._2.get -> cleanup
+                case Right(_) => F.unit -> releaseN(n)
+              }
+          }
       }
 
-      def acquireN(n: Long): F[Unit] =  {
+      def acquireN(n: Long): F[Unit] = {
         F.bracketCase(acquireNInternal(n)) { case (g, _) => g } {
           case ((_, c), Outcome.Canceled()) => c
           case _ => F.unit
@@ -91,10 +107,14 @@ object KeySemaphore {
       }
 
       def available: F[Long] = {
-        state.get.map(_.get(k).map{
-          case Left(_) =>  0
-          case Right(n) => n
-        }.getOrElse(keyFunction(k)))
+        state.get.map(
+          _.get(k)
+            .map {
+              case Left(_) => 0
+              case Right(n) => n
+            }
+            .getOrElse(keyFunction(k))
+        )
       }
 
       def count: F[Long] =
@@ -111,7 +131,7 @@ object KeySemaphore {
         else
           state
             .modify { old =>
-              val u : Option[State[F]] = old.get(k) match {
+              val u: Option[State[F]] = old.get(k) match {
                 case Some(Left(waiting)) =>
                   // just figure out how many to strip from waiting queue,
                   // but don't run anything here inside the modify
@@ -159,7 +179,6 @@ object KeySemaphore {
             }
       }
 
-
       def tryAcquireN(n: Long): F[Boolean] = {
         requireNonNegative(n)
         if (n == 0) F.pure(true)
@@ -171,33 +190,38 @@ object KeySemaphore {
                 case None if (keyFunction(k) >= n) =>
                   val count = keyFunction(k)
                   Right(count - n).some
-                case w                  => w
+                case w => w
               }
-              val newMap : Map[K, State[F]] = u.map(u2 => oldMap + (k -> u2)).getOrElse(oldMap)
+              val newMap: Map[K, State[F]] = u.map(u2 => oldMap + (k -> u2)).getOrElse(oldMap)
               (newMap, (oldMap.get(k), u))
             }
             .map { case (previous, now) =>
               now match {
                 case Some(Left(_)) => false
-                case Some(Right(n)) => previous match {
-                  case Some(Left(_)) => false
-                  case Some(Right(m)) => n != m
-                  case None => true
-                }
+                case Some(Right(n)) =>
+                  previous match {
+                    case Some(Left(_)) => false
+                    case Some(Right(m)) => n != m
+                    case None => true
+                  }
                 case None => false
               }
             }
       }
 
-      def permit: Resource[F,Unit] =
-        Resource.makeFull { (poll: Poll[F]) => poll(acquire) } { _ => release }
+      def permit: Resource[F, Unit] =
+        Resource.makeFull((poll: Poll[F]) => poll(acquire))(_ => release)
 
       // TODO: implement this
       def mapK[G[_]](f: F ~> G)(implicit G: MonadCancel[G, _]): Semaphore[G] = ???
     }
   }
 
-  private final class ConcurrentKeySemaphore[F[_], K](state: Ref[F, Map[K, State[F]]], keyFunction: K => Long)(implicit F: Async[F]) extends AbstractKeySemaphore(state, keyFunction) {
+  private final class ConcurrentKeySemaphore[F[_], K](
+      state: Ref[F, Map[K, State[F]]],
+      keyFunction: K => Long
+  )(implicit F: Async[F])
+      extends AbstractKeySemaphore(state, keyFunction) {
     protected def mkGate: F[Deferred[F, Unit]] = Deferred[F, Unit]
   }
 }
