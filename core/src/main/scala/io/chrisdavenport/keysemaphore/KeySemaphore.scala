@@ -212,9 +212,24 @@ object KeySemaphore {
       def permit: Resource[F, Unit] =
         Resource.makeFull((poll: Poll[F]) => poll(acquire))(_ => release)
 
-      // TODO: implement this
-      def mapK[G[_]](f: F ~> G)(implicit G: MonadCancel[G, _]): Semaphore[G] = ???
+      def mapK[G[_]](f: F ~> G)(implicit G: MonadCancel[G, _]) =
+        new MapKSemaphore[F, G](this, f)
     }
+  }
+
+  final private[this] class MapKSemaphore[F[_], G[_]](
+    underlying: Semaphore[F],
+    f: F ~> G
+  )(implicit F: MonadCancel[F, _], G: MonadCancel[G, _])
+  extends Semaphore[G] {
+    def available: G[Long] = f(underlying.available)
+    def count: G[Long] = f(underlying.count)
+    def acquireN(n: Long): G[Unit] = f(underlying.acquireN(n))
+    def tryAcquireN(n: Long): G[Boolean] = f(underlying.tryAcquireN(n))
+    def releaseN(n: Long): G[Unit] = f(underlying.releaseN(n))
+    def permit: Resource[G, Unit] = underlying.permit.mapK(f)
+    def mapK[H[_]](f: G ~> H)(implicit H: MonadCancel[H, _]): Semaphore[H] =
+      new MapKSemaphore(this, f)
   }
 
   private final class ConcurrentKeySemaphore[F[_], K](
