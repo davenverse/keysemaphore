@@ -212,7 +212,7 @@ object KeySemaphore {
       def permit: Resource[F, Unit] =
         Resource.makeFull((poll: Poll[F]) => poll(acquire))(_ => release)
 
-      def mapK[G[_]](f: F ~> G)(implicit G: MonadCancel[G, _]) =
+      def mapK[G[_]](f: F ~> G)(implicit G: MonadCancel[G, _]): Semaphore[G] =
         new MapKSemaphore[F, G](this, f)
     }
   }
