@@ -2,7 +2,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val catsV = "2.6.1"
 val catsEffectV = "2.5.2"
-val specs2V = "4.12.3"
+val specs2V = "4.12.8"
 
 ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.1")
 
