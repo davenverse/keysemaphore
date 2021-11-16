@@ -23,7 +23,7 @@ Quick Imports
 ```scala mdoc:silent
 import cats.effect._
 import io.chrisdavenport.keysemaphore.KeySemaphore
-implicit val CS = IO.contextShift(scala.concurrent.ExecutionContext.global)
+import cats.effect.unsafe.implicits.global
 ```
 
 Then we build some operations
@@ -38,7 +38,7 @@ val action1 = {
   } yield (first, second)
 }
 
-action1.unsafeRunSync
+action1.unsafeRunSync()
 
 // Not Affected By Other Keys
 val action2 = {
@@ -50,7 +50,7 @@ val action2 = {
   } yield (first, second, third)
 }
 
-action2.unsafeRunSync
+action2.unsafeRunSync()
 
 // Releases Based on Keys
 // This is space safe, so when the semaphore returns to the
@@ -66,5 +66,5 @@ val action3 = {
   } yield (first, second, third)
 }
 
-action3.unsafeRunSync
+action3.unsafeRunSync()
 ```
