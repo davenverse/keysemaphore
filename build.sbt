@@ -18,10 +18,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .in(file("core"))
   .settings(
     name := "keysemaphore",
-    mimaVersionCheckExcludedVersions := {
-      if (isDotty.value) Set("0.2.0")
-      else Set()
-    },
+    mimaVersionCheckExcludedVersions := Set("0.2.0", "0.2.1"),
     libraryDependencies ++= Seq(
       "org.typelevel" %%% "cats-core"           % catsV,
       "org.typelevel" %%% "cats-effect"         % catsEffectV,
