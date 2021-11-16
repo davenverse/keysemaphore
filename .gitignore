@@ -6,7 +6,10 @@ target/
 # Ignore [ce]tags files
 tags
 
+.bsp
 .bloop
 .metals
+project/metals.sbt
+project/project/
 metals.sbt
 .vscode
