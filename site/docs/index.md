@@ -43,7 +43,7 @@ action1.unsafeRunSync()
 // Not Affected By Other Keys
 val action2 = {
   for {
-    sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
+    sem <- KeySemaphore.of[IO, Int]{(_: Int) => 1L}
     first <- sem(1).tryAcquire
     second <- sem(2).tryAcquire
     third <- sem(1).tryAcquire
@@ -58,7 +58,7 @@ action2.unsafeRunSync()
 // leaked per key
 val action3 = {
   for {
-    sem <- KeySemaphore.of[IO, Int]{_: Int => 1L}
+    sem <- KeySemaphore.of[IO, Int]{(_: Int) => 1L}
     first <- sem(1).tryAcquire
     second <- sem(1).tryAcquire
     _ <- sem(1).release
