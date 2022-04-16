@@ -218,10 +218,10 @@ object KeySemaphore {
   }
 
   final private[this] class MapKSemaphore[F[_], G[_]](
-    underlying: Semaphore[F],
-    f: F ~> G
+      underlying: Semaphore[F],
+      f: F ~> G
   )(implicit F: MonadCancel[F, _], G: MonadCancel[G, _])
-  extends Semaphore[G] {
+      extends Semaphore[G] {
     def available: G[Long] = f(underlying.available)
     def count: G[Long] = f(underlying.count)
     def acquireN(n: Long): G[Unit] = f(underlying.acquireN(n))
