@@ -1,7 +1,7 @@
 import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 val catsV = "2.6.1"
-val catsEffectV = "3.2.1"
+val catsEffectV = "3.2.9"
 val munitCatsEffectV = "1.0.5"
 val kindProjectorV = "0.13.2"
 
