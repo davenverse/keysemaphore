@@ -5,7 +5,7 @@ val catsEffectV = "3.2.1"
 val munitCatsEffectV = "1.0.5"
 val kindProjectorV = "0.13.2"
 
-ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.1")
+ThisBuild / crossScalaVersions := Seq("2.12.14", "2.13.12", "3.0.1")
 
 lazy val `keysemaphore` = project
   .in(file("."))
