@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        scala: [2.12, 2.13, 3]
+        scala: [2.13, 3]
         java: [temurin@8]
         project: [keysemaphoreJVM, keysemaphoreJS]
     runs-on: ${{ matrix.os }}
@@ -118,26 +118,6 @@ jobs:
       - name: sbt update
         if: matrix.java == 'temurin@8' && steps.setup-java-temurin-8.outputs.cache-hit == 'false'
         run: sbt +update
-
-      - name: Download target directories (2.12, keysemaphoreJVM)
-        uses: actions/download-artifact@v6
-        with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12-keysemaphoreJVM
-
-      - name: Inflate target directories (2.12, keysemaphoreJVM)
-        run: |
-          tar xf targets.tar
-          rm targets.tar
-
-      - name: Download target directories (2.12, keysemaphoreJS)
-        uses: actions/download-artifact@v6
-        with:
-          name: target-${{ matrix.os }}-${{ matrix.java }}-2.12-keysemaphoreJS
-
-      - name: Inflate target directories (2.12, keysemaphoreJS)
-        run: |
-          tar xf targets.tar
-          rm targets.tar
 
       - name: Download target directories (2.13, keysemaphoreJVM)
         uses: actions/download-artifact@v6
@@ -236,7 +216,7 @@ jobs:
       - name: Submit Dependencies
         uses: scalacenter/sbt-dependency-submission@v2
         with:
-          modules-ignore: keysemaphorejvm_2.12 keysemaphorejvm_2.13 keysemaphorejvm_3 keysemaphorejs_2.12 keysemaphorejs_2.13 keysemaphorejs_3 site_2.12 site_2.13 site_3 keysemaphorenative_2.12 keysemaphorenative_2.13 keysemaphorenative_3
+          modules-ignore: keysemaphorejvm_2.13 keysemaphorejvm_3 keysemaphorejs_2.13 keysemaphorejs_3 site_2.13 site_3 keysemaphorenative_2.13 keysemaphorenative_3
           configs-ignore: test scala-tool scala-doc-tool test-internal
 
   site:
